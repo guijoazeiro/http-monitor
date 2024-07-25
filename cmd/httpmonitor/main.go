@@ -12,6 +12,7 @@ type Server struct {
 	ServerName    string
 	ServerUrl     string
 	ExecutionTime float64
+	Status        int
 }
 
 func createServerList(data [][]string) []Server {
@@ -28,6 +29,19 @@ func createServerList(data [][]string) []Server {
 
 	}
 	return servers
+}
+
+func checkServer(servers []Server) {
+	for _, server := range servers {
+		now := time.Now()
+		get, err := http.Get(server.ServerUrl)
+		if err != nil {
+			fmt.Println(err)
+		}
+		server.ExecutionTime = time.Since(now).Seconds()
+		server.Status = get.StatusCode
+		fmt.Printf("Status: [%d] Time: [%f] Url: [%s]\n", server.Status, server.ExecutionTime, server.ServerUrl)
+	}
 }
 
 func main() {
@@ -49,15 +63,6 @@ func main() {
 	}
 
 	servers := createServerList(data)
-	for _, server := range servers {
-		now := time.Now()
-		get, err := http.Get(server.ServerUrl)
-		if err != nil {
-			fmt.Println(err)
-		}
-		server.ExecutionTime = time.Since(now).Seconds()
-		status := get.StatusCode
-		fmt.Printf("Status: [%d] Time: [%f] Url: [%s]\n", status, server.ExecutionTime, server.ServerUrl)
-	}
+	checkServer(servers)
 
 }
